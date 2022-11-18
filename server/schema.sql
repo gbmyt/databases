@@ -1,7 +1,8 @@
+DROP DATABASE IF EXISTS chat;
+
 CREATE DATABASE chat;
 
 USE chat;
-
 
 /* Create other tables and define schemas for them here! */
 CREATE TABLE rooms (
