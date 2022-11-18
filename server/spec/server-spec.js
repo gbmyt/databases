@@ -4,7 +4,13 @@
 const mysql = require('mysql2');
 const axios = require('axios');
 
+const dbConnect = require('../db/index.js');
+
 const API_URL = 'http://127.0.0.1:3000/classes';
+
+describe('dbConnect should exist', () => {
+  expect(dbConnect).not.toEqual(undefined);
+});
 
 describe('Persistent Node Chat Server', () => {
   const dbConnection = mysql.createConnection({

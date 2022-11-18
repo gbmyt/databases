@@ -1,6 +1,59 @@
 var models = require('../models');
+var dbConnection = require('../db/index.js');
+
+console.log('models', models);
+
+var defaultCorsHeaders = {
+  'access-control-allow-origin': '*',
+  'access-control-allow-methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'access-control-allow-headers': 'content-type, accept, authorization',
+  'access-control-max-age': 10 // Seconds.
+};
+
+var headers = defaultCorsHeaders;
+
+// Model - Represents our data/objects
+// View - what the user sees (our chatterbox rooms in browser)
+// Controller - Behavior / has to do with user interaction
 
 module.exports = {
-  get: function (req, res) {}, // a function which handles a get request for all messages
-  post: function (req, res) {} // a function which handles posting a message to the database
+  get: function (request, response) { // a function which handles a get request for all messages
+    if (request.url === '/messages' && request.method === 'GET') {
+      response.writeHead(200, headers);
+
+      var data = models.messages.getAll();
+      // dbConnection.query('SELECT * FROM messages;', function(err, results) {
+      //   if (err) {
+      //     console.log(err);
+      //   }
+      //   console.log(results);
+      //   // response.end(JSON.parse(results)); // JSON.stringify(messages) used to be internal storage. Replace w/ read/write to db.
+      // });
+      // response.end();
+      response.end(JSON.stringify(data));
+    } else {
+      response.writeHead(404);
+      response.end('404 Page not found!');
+    }
+  },
+
+  post: function (request, response) { // a function which handles posting a message to the database
+    if (request.url === '/messages' && request.method === 'POST') {
+      headers['Content-Type'] = 'application/JSON';
+      response.writeHead(201, headers);
+      // request.on('data', (chunk) => {
+      //   messages.push(JSON.parse(chunk));
+      // });
+      response.end();
+    } else {
+      response.writeHead(404);
+      response.end('404 Page not found!');
+    }
+  }
 };
+
+// else if (request.url === '/classes/messages' && request.method === 'OPTIONS') {
+//   headers['Accept'] = 'GET, POST, OPTIONS';
+//   response.writeHead(200, headers);
+//   response.end('Allow: GET, POST, OPTIONS');
+// }
