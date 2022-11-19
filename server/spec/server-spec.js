@@ -30,7 +30,7 @@ describe('Persistent Node Chat Server', () => {
      * (or repeated runs of the tests)  will not fail when they should be passing
      * or vice versa */
     dbConnection.query(`truncate ${tablename}`, done);
-  }, 6500); // jest.setTimeout Error
+  }, 6500);
 
   afterAll(() => {
     dbConnection.end();
@@ -38,13 +38,13 @@ describe('Persistent Node Chat Server', () => {
 
   it('Should insert posted messages to the DB', (done) => {
     const username = 'Valjean';
-    const message = 'In mercy\'s name, three days is all I need.';
+    const msg = 'In mercy\'s name, three days is all I need.';
     const roomname = 'Hello';
     // Create a user on the chat server database.
     axios.post(`${API_URL}/users`, { username })
       .then(() => {
         // Post a message to the node chat server:
-        return axios.post(`${API_URL}/messages`, { username, message, roomname });
+        return axios.post(`${API_URL}/messages`, { username, msg, roomname });
       })
       .then(() => {
         // Now if we look in the database, we should find the posted message there.
@@ -54,15 +54,19 @@ describe('Persistent Node Chat Server', () => {
         const queryString = 'SELECT * FROM messages';
         const queryArgs = [];
 
+        // SELECT * From messages WHERE id = ?
+        // [1]
+
         dbConnection.query(queryString, queryArgs, (err, results) => {
           if (err) {
             throw err;
           }
+          console.log('spec query results', results);
           // Should have one result:
           expect(results.length).toEqual(1);
 
           // TODO: If you don't have a column named text, change this test.
-          expect(results[0].msg).toEqual(message);
+          expect(results[0].msg).toEqual(msg);
           done();
         });
       })

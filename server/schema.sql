@@ -7,7 +7,7 @@ USE chat;
 /* Create other tables and define schemas for them here! */
 CREATE TABLE rooms (
   id INT NOT NULL AUTO_INCREMENT,
-  room_name TEXT,
+  roomname TEXT,
   PRIMARY KEY(id)
 );
 
@@ -20,7 +20,8 @@ CREATE TABLE messages (
   /* Describe your table here.*/
   id INT NOT NULL AUTO_INCREMENT,
   msg TEXT,
-  user TEXT,
+  username TEXT,
+  roomname TEXT,
   id_Users INT,
   id_Rooms INT,
   PRIMARY KEY(id),

@@ -9,46 +9,31 @@ var mysql = require('mysql2');
 // OR
 // user: 'root', password: 'some_password_you_created_at_install'
 
-var conn = function(queryStr) {
-  const dbConnection = mysql.createConnection({
-    user: 'root',
-    password: '',
-    database: 'chat',
-  });
+// var conn = function(queryStr) {
+const dbConnection = mysql.createConnection({
+  user: 'root',
+  password: '',
+  database: 'chat',
+});
 
-  dbConnection.connect(function(err) {
-    if (err) {
-      console.log('err?', err);
-    }
+// dbConnection.connect(function(err) {
+//   if (err) {
+//     console.log('err?', err);
+//   }
 
-    const tablename = 'messages';
+//   const tablename = 'messages';
 
-    // /* Empty the db table before all tests so that multiple tests
-	  // 	* (or repeated runs of the tests)  will not fail when they should be passing
-	  // 	* or vice versa */
-    dbConnection.query(`truncate ${tablename}`, function(err, results) {
-      if (err) {
-        console.log(err);
-      }
-      console.log(results);
-    });
-
-    dbConnection.query('INSERT INTO messages (id, msg, user) VALUES (1, "example text", "example_user")', function (err, results) {
-      if (err) {
-        console.log(err);
-      }
-      console.log('INSERT result', results);
-    });
-
-    dbConnection.query(queryStr, function(err, results) {
-      if (err) {
-        console.log(err);
-      }
-      console.log('db/index query results', results);
-      return results;
-    });
-  });
-};
+//   // /* Empty the db table before all tests so that multiple tests
+//   // 	* (or repeated runs of the tests)  will not fail when they should be passing
+//   // 	* or vice versa */
+//   dbConnection.query(`truncate ${tablename}`, function(err, results) {
+//     if (err) {
+//       console.log(err);
+//     }
+//     console.log(results);
+//   });
+// });
+// };
 
 
 // Proof that we can query our db successfully
@@ -60,7 +45,8 @@ var conn = function(queryStr) {
 // });
 
 // dbConnection.end();
-exports.conn = conn; // conn("SELECT * FROM messages")
+
+exports.dbConnection = dbConnection; // conn("SELECT * FROM messages")
 
 
 

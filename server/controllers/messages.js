@@ -1,7 +1,7 @@
 var models = require('../models');
 var dbConnection = require('../db/index.js');
 
-console.log('models', models);
+// console.log('models', models);
 
 var defaultCorsHeaders = {
   'access-control-allow-origin': '*',
@@ -21,16 +21,9 @@ module.exports = {
     if (request.url === '/messages' && request.method === 'GET') {
       response.writeHead(200, headers);
 
-      var data = models.messages.getAll();
-      // dbConnection.query('SELECT * FROM messages;', function(err, results) {
-      //   if (err) {
-      //     console.log(err);
-      //   }
-      //   console.log(results);
-      //   // response.end(JSON.parse(results)); // JSON.stringify(messages) used to be internal storage. Replace w/ read/write to db.
-      // });
-      // response.end();
-      response.end(JSON.stringify(data));
+      // var data = models.messages.getAll();
+      // response.end(JSON.stringify(data));
+      response.end('Success!');
     } else {
       response.writeHead(404);
       response.end('404 Page not found!');
@@ -41,10 +34,15 @@ module.exports = {
     if (request.url === '/messages' && request.method === 'POST') {
       headers['Content-Type'] = 'application/JSON';
       response.writeHead(201, headers);
-      // request.on('data', (chunk) => {
-      //   messages.push(JSON.parse(chunk));
-      // });
-      response.end();
+
+      console.log('STATIC');
+
+      console.log('data chunk', request.body);
+      var { username, msg, roomname } = request.body;
+
+      var data = models.messages.create(1, msg, username, roomname); // get msg text and username from request (request.body???) somehow
+      response.end('Created');
+      // response.end('Created');
     } else {
       response.writeHead(404);
       response.end('404 Page not found!');
