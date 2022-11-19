@@ -2,7 +2,7 @@
 var db = require('../db').dbConnection;
 
 module.exports = {
-  getAll: function () {
+  getAll: function (done) {
     db.connect(function(err) {
       if (err) {
         console.log('err?', err);
@@ -14,11 +14,12 @@ module.exports = {
       if (err) {
         console.log(err);
       } else {
-        console.log('models/users/getAll works', results);
+        // console.log('models/users/getAll works', results);
+        done(results);
       }
     });
   },
-  create: function () {
+  create: function (id, username, cb) {
     db.connect(function(err) {
       if (err) {
         console.log('err?', err);
@@ -26,11 +27,14 @@ module.exports = {
       console.log('Connected!');
     });
 
-    db.query(`INSERT INTO users (id, username) VALUES (1, "Jason")`, function (err, results) {
+    var queryStr = `INSERT INTO users (id, username) VALUES (${db.escape(id)}, ${db.escape(username)})`;
+
+    db.query(queryStr, function (err, results) {
       if (err) {
         console.log(err);
       }
-      console.log('models/users/create works - Created a user', results);
+      // console.log('models/users/create works - Created a user', results);
+      cb(results);
     });
   }
 };

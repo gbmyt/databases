@@ -14,14 +14,9 @@ module.exports = {
   get: function (request, response) {
     if (request.url === '/users' && request.method === 'GET') {
       response.writeHead(200, headers);
-
-      console.log('GET data chunk', request.query);
-
-      // response.end(JSON.stringify(data));
-      // var data = models.users.getAll();
-      console.log('models.users.getAll', models.users.getAll());
-      // response.end(JSON.stringify(data));
-      response.end('Success!');
+      var data = models.users.getAll((data) => {
+        response.end(JSON.stringify(data));
+      });
     } else {
       response.writeHead(404);
       response.end('404 Page not found!');
@@ -32,11 +27,12 @@ module.exports = {
       headers['Content-Type'] = 'application/JSON';
       response.writeHead(201, headers);
 
-      console.log('POST data chunk', request.query);
+      var { username } = request.body;
 
-      var data = models.users.create();
-      // response.end(JSON.stringify(data));
-      response.end('controllers/users/Post works');
+      models.users.create(null, username, (data) => {
+        response.write(JSON.stringify(data));
+        response.end('controllers/users/Post works');
+      });
     } else {
       response.writeHead(404);
       response.end('404 Page not found!');

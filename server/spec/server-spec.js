@@ -40,6 +40,7 @@ describe('Persistent Node Chat Server', () => {
     const username = 'Valjean';
     const msg = 'In mercy\'s name, three days is all I need.';
     const roomname = 'Hello';
+
     // Create a user on the chat server database.
     axios.post(`${API_URL}/users`, { username })
       .then(() => {
@@ -54,15 +55,10 @@ describe('Persistent Node Chat Server', () => {
         const queryString = 'SELECT * FROM messages';
         const queryArgs = [];
 
-        // SELECT * From messages WHERE id = ?
-        // [1]
-
         dbConnection.query(queryString, queryArgs, (err, results) => {
           if (err) {
             throw err;
           }
-          console.log('spec query results', results);
-          // Should have one result:
           expect(results.length).toEqual(1);
 
           // TODO: If you don't have a column named text, change this test.
@@ -76,8 +72,13 @@ describe('Persistent Node Chat Server', () => {
   });
 
   it('Should output all messages from the DB', (done) => {
+    const username = 'Valjean';
+    const msg = 'In mercy\'s name, three days is all I need.';
+    const roomname = 'Hello';
     // Let's insert a message into the db
-    const queryString = '';
+    dbConnection.query('truncate messages');
+
+    const queryString = 'INSERT INTO messages (id, msg, username, roomname) VALUES (null, "In mercy\'s name, three days is all I need.", "Valjean", "Hello")';
     const queryArgs = [];
     /* TODO: The exact query string and query args to use here
      * depend on the schema you design, so I'll leave them up to you. */
@@ -90,7 +91,8 @@ describe('Persistent Node Chat Server', () => {
       axios.get(`${API_URL}/messages`)
         .then((response) => {
           const messageLog = response.data;
-          expect(messageLog[0].msg).toEqual(message);
+
+          expect(messageLog[0].msg).toEqual(msg);
           expect(messageLog[0].roomname).toEqual(roomname);
           done();
         })
@@ -98,5 +100,53 @@ describe('Persistent Node Chat Server', () => {
           throw err;
         });
     });
+  });
+
+
+  it('Should insert posted username to the DB', (done) => {
+    const username = 'James';
+    axios.post(`${API_URL}/users`, { username })
+      .then(() => {
+        const queryUser = 'SELECT * FROM users';
+        const queryArgs = [];
+
+        dbConnection.query(queryUser, queryArgs, (err, results) => {
+          if (err) {
+            throw err;
+          }
+          // expect(results.length).toEqual(1);
+          // console.log('spec username', results);
+          expect(results[results.length - 1].username).toEqual(username);
+          done();
+        });
+      })
+      .catch((err) => {
+        throw err;
+      });
+  });
+
+
+
+  it('should output all users from the Users table', function(done) {
+    dbConnection.query('truncate messages');
+    const username = 'Test User';
+
+    const queryString = `INSERT INTO users (id, username) VALUES (null, ${dbConnection.escape(username)})`;
+
+    dbConnection.query(queryString, (err) => {
+      if (err) { throw err; }
+
+      axios.get(`${API_URL}/users`)
+        .then((response) => {
+          const messageLog = response.data;
+          // console.log('messageLog', messageLog[messageLog.length - 1].username);
+          expect(messageLog[messageLog.length - 1].username).toEqual(username);
+          done();
+        })
+        .catch((err) => {
+          throw err;
+        });
+    });
+
   });
 });
