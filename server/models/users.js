@@ -1,5 +1,7 @@
 // var db = require('../db');
-var db = require('../db').dbConnection;
+var db = require('../db');
+console.log('db', db);
+
 
 module.exports = {
   getAll: function (done) {
@@ -18,6 +20,8 @@ module.exports = {
         done(results);
       }
     });
+    // var users = db.findAll();
+    // done(users);
   },
   create: function (id, username, cb) {
     db.connect(function(err) {
@@ -36,5 +40,8 @@ module.exports = {
       // console.log('models/users/create works - Created a user', results);
       cb(results);
     });
+
+    // var users = db.create({ username });
+    // cb(users);
   }
 };

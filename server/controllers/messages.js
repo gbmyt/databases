@@ -30,7 +30,7 @@ module.exports = {
       response.writeHead(201, headers);
       var { username, msg, roomname } = request.body;
 
-      var data = models.messages.create(null, msg, username, roomname);
+      var data = models.messages.create(msg, username, roomname);
       response.end('Created');
       // response.end('Created');
     } else {

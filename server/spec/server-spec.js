@@ -3,8 +3,10 @@
 
 const mysql = require('mysql2');
 const axios = require('axios');
+var Sequelize = require('sequelize');
+var dbConnect = new Sequelize('chat', 'root', '', { dialect: 'mysql'});
 
-const dbConnect = require('../db/index.js');
+// const dbConnect = require('../db/index.js');
 
 const API_URL = 'http://127.0.0.1:3000/classes';
 
@@ -13,27 +15,26 @@ describe('dbConnect should exist', () => {
 });
 
 describe('Persistent Node Chat Server', () => {
-  const dbConnection = mysql.createConnection({
-    user: 'root',
-    password: '',
-    database: 'chat',
-  });
+  // const dbConnection = mysql.createConnection({
+  //   user: 'root',
+  //   password: '',
+  //   database: 'chat',
+  // });
 
-  beforeAll((done) => {
+  // beforeAll((done) => {
 
-    // jest.setTimeout(100000);
-    dbConnection.connect();
+  //   dbConnection.connect();
 
-    const tablename = 'messages'; // TODO: fill this out
+  //   const tablename = 'messages'; // TODO: fill this out
 
-    /* Empty the db table before all tests so that multiple tests
-     * (or repeated runs of the tests)  will not fail when they should be passing
-     * or vice versa */
-    dbConnection.query(`truncate ${tablename}`, done);
-  }, 6500);
+  //   /* Empty the db table before all tests so that multiple tests
+  //    * (or repeated runs of the tests)  will not fail when they should be passing
+  //    * or vice versa */
+  //   dbConnection.query(`truncate ${tablename}`, done);
+  // }, 6500);
 
   afterAll(() => {
-    dbConnection.end();
+    dbConnect.close();
   });
 
   it('Should insert posted messages to the DB', (done) => {
@@ -48,23 +49,28 @@ describe('Persistent Node Chat Server', () => {
         return axios.post(`${API_URL}/messages`, { username, msg, roomname });
       })
       .then(() => {
+        // dbConnect.create(msg, username, roomname);
+        var allMessageas = dbConnect.findAll();
+        expect(allMessageas[0].msg).toEqual(msg);
+        console.log('allMessages', allMessageas);
+
         // Now if we look in the database, we should find the posted message there.
 
         /* TODO: You might have to change this test to get all the data from
          * your message table, since this is schema-dependent. */
-        const queryString = 'SELECT * FROM messages';
-        const queryArgs = [];
+        // const queryString = 'SELECT * FROM messages';
+        // const queryArgs = [];
 
-        dbConnection.query(queryString, queryArgs, (err, results) => {
-          if (err) {
-            throw err;
-          }
-          expect(results.length).toEqual(1);
+        // dbConnection.query(queryString, queryArgs, (err, results) => {
+        //   if (err) {
+        //     throw err;
+        //   }
+        //   expect(results.length).toEqual(1);
 
-          // TODO: If you don't have a column named text, change this test.
-          expect(results[0].msg).toEqual(msg);
-          done();
-        });
+        //   // TODO: If you don't have a column named text, change this test.
+        //   expect(results[0].msg).toEqual(msg);
+        //   done();
+        // });
       })
       .catch((err) => {
         throw err;
@@ -78,47 +84,56 @@ describe('Persistent Node Chat Server', () => {
     // Let's insert a message into the db
     dbConnection.query('truncate messages');
 
-    const queryString = 'INSERT INTO messages (id, msg, username, roomname) VALUES (null, "In mercy\'s name, three days is all I need.", "Valjean", "Hello")';
-    const queryArgs = [];
-    /* TODO: The exact query string and query args to use here
-     * depend on the schema you design, so I'll leave them up to you. */
-    dbConnection.query(queryString, queryArgs, (err) => {
-      if (err) {
+    dbConnect.create(msg, username, roomname);
+
+    // const queryString = 'INSERT INTO messages (id, msg, username, roomname) VALUES ("In mercy\'s name, three days is all I need.", "Valjean", "Hello")';
+    // const queryArgs = [];
+    // /* TODO: The exact query string and query args to use here
+    //  * depend on the schema you design, so I'll leave them up to you. */
+    // dbConnection.query(queryString, queryArgs, (err) => {
+    //   if (err) {
+    //     throw err;
+    //   }
+
+    // Now query the Node chat server and see if it returns the message we just inserted:
+    axios.get(`${API_URL}/messages`)
+      .then((response) => {
+        const messageLog = response.data;
+
+        expect(messageLog[0].msg).toEqual(msg);
+        expect(messageLog[0].roomname).toEqual(roomname);
+        done();
+      })
+      .catch((err) => {
         throw err;
-      }
-
-      // Now query the Node chat server and see if it returns the message we just inserted:
-      axios.get(`${API_URL}/messages`)
-        .then((response) => {
-          const messageLog = response.data;
-
-          expect(messageLog[0].msg).toEqual(msg);
-          expect(messageLog[0].roomname).toEqual(roomname);
-          done();
-        })
-        .catch((err) => {
-          throw err;
-        });
-    });
+      });
   });
-
 
   it('Should insert posted username to the DB', (done) => {
     const username = 'James';
+
     axios.post(`${API_URL}/users`, { username })
       .then(() => {
-        const queryUser = 'SELECT * FROM users';
-        const queryArgs = [];
-
-        dbConnection.query(queryUser, queryArgs, (err, results) => {
-          if (err) {
-            throw err;
-          }
-          // expect(results.length).toEqual(1);
-          // console.log('spec username', results);
-          expect(results[results.length - 1].username).toEqual(username);
-          done();
+        var users = dbConnect.findAll();
+        console.log('findall users', users);
+        users.every(user => {
+          console.log('SPEC USER LOG', user, user.username);
+          expect(user.username).toEqual(username);
         });
+        done();
+
+        // const queryUser = 'SELECT * FROM users';
+        // const queryArgs = [];
+
+        // dbConnection.query(queryUser, queryArgs, (err, results) => {
+        //   if (err) {
+        //     throw err;
+        //   }
+        //   // expect(results.length).toEqual(1);
+        //   // console.log('spec username', results);
+        //   expect(results[results.length - 1].username).toEqual(username);
+        //   done();
+        // });
       })
       .catch((err) => {
         throw err;
@@ -126,27 +141,39 @@ describe('Persistent Node Chat Server', () => {
   });
 
 
-
   it('should output all users from the Users table', function(done) {
-    dbConnection.query('truncate messages');
+
+
+    // dbConnection.query('truncate messages');
     const username = 'Test User';
 
-    const queryString = `INSERT INTO users (id, username) VALUES (null, ${dbConnection.escape(username)})`;
+    // const queryString = `INSERT INTO users (id, username) VALUES (null, ${dbConnection.escape(username)})`;
 
-    dbConnection.query(queryString, (err) => {
-      if (err) { throw err; }
+    dbConnect.create({ username });
 
-      axios.get(`${API_URL}/users`)
-        .then((response) => {
-          const messageLog = response.data;
-          // console.log('messageLog', messageLog[messageLog.length - 1].username);
-          expect(messageLog[messageLog.length - 1].username).toEqual(username);
-          done();
-        })
-        .catch((err) => {
-          throw err;
-        });
-    });
+    axios.get(`${API_URL}/users`)
+      .then((users) => {
+        console.log('CREATE USER SPEC', users);
+        done();
+      })
+      .catch((err) => {
+        throw err;
+      });
+
+    // dbConnection.query(queryString, (err) => {
+    //   if (err) { throw err; }
+
+    //   axios.get(`${API_URL}/users`)
+    //     .then((response) => {
+    //       const messageLog = response.data;
+    //       // console.log('messageLog', messageLog[messageLog.length - 1].username);
+    //       expect(messageLog[messageLog.length - 1].username).toEqual(username);
+    //       done();
+    //     })
+    //     .catch((err) => {
+    //       throw err;
+    //     });
+    // });
 
   });
 });
